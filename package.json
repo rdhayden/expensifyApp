@@ -1,6 +1,9 @@
 {
   "name": "boilerplate",
   "version": "1.0.0",
+  "engine": {
+    "node": "10.x"
+  },
   "main": "index.js",
   "author": "Robin Hayden",
   "license": "MIT",
