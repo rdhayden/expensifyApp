@@ -7,6 +7,32 @@ export const addExpense = (expense) => ({
   expense,
 });
 
+export const startAddExpense = (expenseData = {}) => {
+  return (dispatch) => {
+    const {
+      description = '',
+      note = '',
+      amount = 0,
+      createdAt = 0,
+    } = expenseData;
+    const expense = { description, note, amount, createdAt };
+    return database //the return ensures a promise is returned which allows us to chain a then in tests
+      .ref('expenses')
+      .push(expense)
+      .then((ref) => {
+        dispatch(
+          addExpense({
+            id: ref.key,
+            ...expense,
+          })
+        );
+      })
+      .catch((e) => {
+        console.log('problem persisting expense', e);
+      });
+  };
+};
+
 // removeExpense Action
 export const removeExpense = ({ id }) => ({
   type: 'REMOVE_EXPENSE',
@@ -20,28 +46,28 @@ export const editExpense = (id, updates) => ({
   updates,
 });
 
-export const startAddExpense = (expenseData = {}) => {
+export const setExpenses = (expenses) => ({
+  type: 'SET_EXPENSES',
+  expenses,
+});
+
+export const startSetExpenses = (expenses = {}) => {
   return (dispatch) => {
-    const {
-      description = '',
-      note = '',
-      amount = 0,
-      createdAt = 0,
-    } = expenseData;
-    const expense = { description, note, amount, createdAt };
-    return database
+    return database //the return ensures a promise is returned which allows us to chain a then in app.js when startSetExpenses is called
       .ref('expenses')
-      .push(expense)
-      .then((ref) => {
-        dispatch(
-          addExpense({
-            id: ref.key,
-            ...expense,
-          })
-        );
+      .once('value')
+      .then((snapshot) => {
+        const expenses = [];
+        snapshot.forEach((childSnapshot) => {
+          expenses.push({
+            id: childSnapshot.key,
+            ...childSnapshot.val(),
+          });
+        });
+        dispatch(setExpenses(expenses));
       })
       .catch((e) => {
-        console.log('problem dispatching to redux store', e);
+        console.log('problem retrieving expenses', e);
       });
   };
 };
