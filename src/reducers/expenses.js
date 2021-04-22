@@ -1,5 +1,3 @@
-import expenses from '../tests/fixtures/expenses';
-
 const expensesReducerDefaultState = [];
 
 export default (state = expensesReducerDefaultState, action) => {
